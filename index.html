@@ -33,11 +33,20 @@ body {
   font-size: 16px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  cursor: none;
   overflow-x: hidden;
 }
-/* CURSOR */
+
+/* CURSOR — desktop only (pointer: fine = mouse/trackpad) */
+@media (pointer: fine) {
+  body { cursor: none; }
+  #cursor, #cursor-ring { display: block; }
+}
+@media (pointer: coarse), (hover: none) {
+  #cursor, #cursor-ring { display: none !important; }
+}
+
 #cursor {
+  display: none;
   width: 8px; height: 8px;
   background: var(--gold);
   border-radius: 50%;
@@ -47,6 +56,7 @@ body {
   mix-blend-mode: screen;
 }
 #cursor-ring {
+  display: none;
   width: 36px; height: 36px;
   border: 1px solid rgba(201,168,76,0.4);
   border-radius: 50%;
@@ -759,23 +769,30 @@ footer {
 </footer>
 
 <script>
-// Cursor
-const cur = document.getElementById('cursor');
-const ring = document.getElementById('cursor-ring');
-let mx=0,my=0,rx=0,ry=0;
-document.addEventListener('mousemove', e => {
-  mx=e.clientX; my=e.clientY;
-  cur.style.left=mx+'px'; cur.style.top=my+'px';
-});
-(function animRing(){
-  rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12;
-  ring.style.left=rx+'px'; ring.style.top=ry+'px';
-  requestAnimationFrame(animRing);
-})();
-document.querySelectorAll('a,button').forEach(el=>{
-  el.addEventListener('mouseenter',()=>{ cur.style.width='16px'; cur.style.height='16px'; ring.style.width='52px'; ring.style.height='52px'; });
-  el.addEventListener('mouseleave',()=>{ cur.style.width='8px'; cur.style.height='8px'; ring.style.width='36px'; ring.style.height='36px'; });
-});
+// Cursor — only on devices with a precise pointer (mouse/trackpad), not touch screens
+const isPointerFine = window.matchMedia('(pointer: fine)').matches;
+
+if (isPointerFine) {
+  const cur = document.getElementById('cursor');
+  const ring = document.getElementById('cursor-ring');
+  cur.style.display = 'block';
+  ring.style.display = 'block';
+
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove', e => {
+    mx=e.clientX; my=e.clientY;
+    cur.style.left=mx+'px'; cur.style.top=my+'px';
+  });
+  (function animRing(){
+    rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12;
+    ring.style.left=rx+'px'; ring.style.top=ry+'px';
+    requestAnimationFrame(animRing);
+  })();
+  document.querySelectorAll('a,button').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{ cur.style.width='16px'; cur.style.height='16px'; ring.style.width='52px'; ring.style.height='52px'; });
+    el.addEventListener('mouseleave',()=>{ cur.style.width='8px'; cur.style.height='8px'; ring.style.width='36px'; ring.style.height='36px'; });
+  });
+}
 
 // Scroll reveal
 const obs = new IntersectionObserver((entries)=>{
